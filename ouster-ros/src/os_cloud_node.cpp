@@ -16,6 +16,7 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include "conav_diagnostics_msgs/msg/heartbeat.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -159,6 +160,7 @@ class OusterCloud : public OusterProcessingNodeBase {
             lidar_pubs[i] = create_publisher<sensor_msgs::msg::PointCloud2>(
                 topic_for_return("points", i), qos);
         }
+        heartbeat_pub = create_publisher<conav_diagnostics_msgs::msg::Heartbeat>("heartbeat", 1);
     }
 
     void create_subscriptions() {
@@ -203,6 +205,9 @@ class OusterCloud : public OusterProcessingNodeBase {
             pc_msg.header.frame_id = sensor_frame;
             lidar_pubs[i]->publish(pc_msg);
         }
+        
+        heartbeat_msg.header = msg->header;
+        heartbeat_pub->publish(heartbeat_msg);
     }
 
     uint64_t impute_value(int last_scan_last_nonzero_idx,
@@ -333,8 +338,12 @@ class OusterCloud : public OusterProcessingNodeBase {
         lidar_pubs;
     rclcpp::Subscription<PacketMsg>::SharedPtr imu_packet_sub;
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub;
+    rclcpp::Publisher<conav_diagnostics_msgs::msg::Heartbeat>::SharedPtr heartbeat_pub; //Heartbeat is only implemented for lidar at this moment. 
 
     sensor_msgs::msg::PointCloud2 pc_msg;
+    conav_diagnostics_msgs::msg::Heartbeat heartbeat_msg;
+    
+    heartbeat_msg.active = true; //during sensor failure, there won't be any heartbeat message. So, the default value is true.
 
     int n_returns = 0;
 
