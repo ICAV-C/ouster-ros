@@ -16,13 +16,13 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include "conav_diagnostics_msgs/msg/heartbeat.hpp"
 
 #include <algorithm>
 #include <chrono>
 #include <memory>
 #include <cassert>
 
+#include "conav_diagnostics_msgs/msg/heartbeat.hpp"
 #include "ouster_msgs/msg/packet_msg.hpp"
 #include "ouster_srvs/srv/get_metadata.hpp"
 #include "ouster_ros/os_processing_node_base.h"
@@ -206,7 +206,8 @@ class OusterCloud : public OusterProcessingNodeBase {
             lidar_pubs[i]->publish(pc_msg);
         }
         
-        heartbeat_msg.header = msg->header;
+        heartbeat_msg.header.stamp = msg_ts;
+        heartbeat_msg.active = true;
         heartbeat_pub->publish(heartbeat_msg);
     }
 
@@ -343,8 +344,6 @@ class OusterCloud : public OusterProcessingNodeBase {
     sensor_msgs::msg::PointCloud2 pc_msg;
     conav_diagnostics_msgs::msg::Heartbeat heartbeat_msg;
     
-    heartbeat_msg.active = true; //during sensor failure, there won't be any heartbeat message. So, the default value is true.
-
     int n_returns = 0;
 
     ouster::PointsF lut_direction;
