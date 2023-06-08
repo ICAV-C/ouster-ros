@@ -160,7 +160,9 @@ class OusterCloud : public OusterProcessingNodeBase {
             lidar_pubs[i] = create_publisher<sensor_msgs::msg::PointCloud2>(
                 topic_for_return("points", i), qos);
         }
+        
         heartbeat_pub = create_publisher<conav_diagnostics_msgs::msg::Heartbeat>("heartbeat", 1);
+        
     }
 
     void create_subscriptions() {
@@ -207,7 +209,7 @@ class OusterCloud : public OusterProcessingNodeBase {
         }
         
         heartbeat_msg.header.stamp = msg_ts;
-        heartbeat_msg.active = true;
+        heartbeat_msg.active = true; //during sensor failure, there won't be any heartbeat message. So, the default value is true.
         heartbeat_pub->publish(heartbeat_msg);
     }
 
